@@ -65,27 +65,67 @@ bool ServerSocket::startListening()
 
 int ServerSocket::handleIncomingConnection()
 {
-    int new_socket;
-    if ((new_socket = accept(m_server_fd, (struct sockaddr *)&m_address,
-                             (socklen_t *)&m_address)) < 0)
+    int new_socket = -1;
+    try
     {
-        perror("accept");
+        new_socket = accept(m_server_fd, (struct sockaddr *)&m_address,
+                            (socklen_t *)&m_address);
+        if (new_socket < 0)
+        {
+            perror("accept");
+        }
     }
+    catch (...)
+    {
+        new_socket = -1;
+        std::cout << "Error while reading from accept new socket\n";
+    }
+
     return new_socket;
 }
 
 int ServerSocket::readMessage(int socketDescriptor, char *buffer, size_t length)
 {
     assert(sizeof(buffer) < length);
-    return read(socketDescriptor, buffer, length);
+    int byteRead = -1;
+    try
+    {
+        byteRead = read(socketDescriptor, buffer, length);
+    }
+    catch (...)
+    {
+        byteRead = -1;
+        std::cout << "Error while reading from socket\n";
+    }
+    return byteRead;
 }
 
 int ServerSocket::sendMessage(int socketDescriptor, const std::string &message)
 {
-    return send(socketDescriptor, message.c_str(), message.size(), 0);
+    int byteSend = -1;
+    try
+    {
+        byteSend = send(socketDescriptor, message.c_str(), message.size(), MSG_NOSIGNAL);
+    }
+    catch (...)
+    {
+        byteSend = -1;
+        std::cout << "Error while sending to socket\n";
+    }
+    return byteSend;
 }
 
 int ServerSocket::closeConnection(int socketDescriptor)
 {
-    return close(socketDescriptor);
+    int status = -1;
+    try
+    {
+        status = close(socketDescriptor);
+    }
+    catch (...)
+    {
+        status = -1;
+        std::cout << "Error while closing the socket\n";
+    }
+    return status;
 }

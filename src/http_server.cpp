@@ -53,8 +53,8 @@ int HttpServer::handleListening()
 
     while (!m_stop)
     {
-        int newSocket;
-        if ((newSocket = m_socket_->handleIncomingConnection()) < 0)
+        int newSocket = m_socket_->handleIncomingConnection();
+        if (newSocket < 0)
         {
             perror("accept");
             continue;
@@ -81,6 +81,9 @@ void HttpServer::handleConnectionThread(size_t threadId)
 bool HttpServer::readMessageFrom(int newSocket, size_t threadId)
 {
     int bytesRead = m_socket_->readMessage(newSocket, m_buffer[threadId], MAX_BYTES_READ_PER_TIME);
+    if (bytesRead <= 0)
+        return false;
+
     std::string bufferMsg;
     bufferMsg.assign(m_buffer[threadId], m_buffer[threadId] + bytesRead);
 
