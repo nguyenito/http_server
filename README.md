@@ -22,6 +22,9 @@ server.listen(port, backlog, threadPoolSize);
 ```
 
 #### Feature supported
+Only support 'HTTP/1.1' version. If the request line have the version is not 'HTTP/1.1', it will return HTTPVersionNotSupported(505)
 Not support Keep-Alive connection yet
-Currently only support GET method and header with Content-Lenght when client sending Http message with body
+Not support Transfer-Encoding yet. It will return BadRequest(400) status code if therequests containing a message-body but Content-Length header field.
+Currently only support GET method. It will returnn NotFound(404) if the get request to a unkown resource uri (It's mean user did not .GET the resource uri to the server object yet)
+
 
