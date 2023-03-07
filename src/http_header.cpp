@@ -65,6 +65,14 @@ bool HttpHeader::isHasContentLength() const
         return false;
 }
 
+size_t HttpHeader::getContentLength() const
+{
+    if (!isHasContentLength())
+        return 0;
+
+    return std::stoi(m_attributes.at(HeaderAttributeName[HeaderAttribute::ContentLength]));
+}
+
 std::string HttpHeader::getStartLine() const
 {
     return m_start_line;

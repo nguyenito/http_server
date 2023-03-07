@@ -86,6 +86,11 @@ inline std::string HttpResponse::getStatusCode() const
     return std::to_string(static_cast<int>(m_status));
 }
 
+void HttpResponse::setStatusCode(HttpStatusCode status)
+{
+    m_status = status;
+}
+
 void HttpResponse::buildStartLine()
 {
     std::string startLine = m_header.getHttpVersion() + HttpHeader::HTTP_INITIAL_LINE_SEPARATOR + getStatusCode() + HttpHeader::HTTP_INITIAL_LINE_SEPARATOR + GetReasonPhrase(m_status);

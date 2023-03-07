@@ -43,6 +43,7 @@ public:
 
     bool isHas(const std::string &fieldName) const;
     bool isHasContentLength() const;
+    size_t getContentLength() const;
     std::string getStartLine() const;
     void print() const;
     void addHeader(const std::string &key, const std::string &value);

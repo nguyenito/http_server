@@ -41,8 +41,8 @@ public:
     }
     void push(T &&newElement)
     {
-         std::unique_lock<std::mutex> lockQ(mutex_);
-    queue_.push(std::move(newElement));
-    cond_.notify_one();
+        std::unique_lock<std::mutex> lockQ(mutex_);
+        queue_.push(std::move(newElement));
+        cond_.notify_one();
     }
 };

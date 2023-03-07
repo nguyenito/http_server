@@ -110,4 +110,5 @@ public:
     HttpResponse(const HttpStatusCode &statusCode);
 
     std::string getStatusCode() const;
+    void setStatusCode(HttpStatusCode status);
 };

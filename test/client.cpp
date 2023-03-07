@@ -38,34 +38,30 @@ public:
         int status, valread;
         struct sockaddr_in serv_addr;
         bool success = false;
-        while (!success)
+        if ((m_client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
-            if ((m_client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-            {
-                printf("\n Socket creation error \n");
-                usleep(100000);
-                continue;
-            }
+            printf("\n Socket creation error \n");
+            usleep(100000);
+            return false;
+        }
 
-            serv_addr.sin_family = AF_INET;
-            serv_addr.sin_port = htons(m_port);
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_port = htons(m_port);
 
-            // Convert IPv4 and IPv6 addresses from text to binary
-            // form
-            if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
-            {
-                printf(
-                    "\nInvalid address/ Address not supported \n");
-                usleep(100000);
-                continue;
-            }
+        // Convert IPv4 and IPv6 addresses from text to binary
+        // form
+        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
+        {
+            printf(
+                "\nInvalid address/ Address not supported \n");
+            usleep(100000);
+            return false;
+        }
 
-            status = connect(m_client_fd, (struct sockaddr *)&serv_addr,
-                             sizeof(serv_addr));
-            if (status >= 0)
-                success = true;
-            else
-                usleep(100000);
+        if ((status = connect(m_client_fd, (struct sockaddr *)&serv_addr,
+                              sizeof(serv_addr))) < 0)
+        {
+            return false;
         }
 
         m_is_connected = true;
@@ -87,6 +83,18 @@ public:
 
         // // closing the connected socket
         // close(m_client_fd);
+    }
+
+    bool readMessage(std::string &message)
+    {
+        char buffer[1024] = {0};
+        int valread = read(m_client_fd, buffer, 1024);
+
+        if (valread <= 0)
+            return false;
+
+        message.assign(buffer, buffer + valread);
+        return true;
     }
 };
 
@@ -116,10 +124,19 @@ int sendHttpRequest()
     logFile.close();
 
     ClientSocket socket(PORT);
+
     if (socket.connectServer())
     {
-        if (socket.sendMessage(strBuffer))
-            return 0;
+        if (!socket.sendMessage(strBuffer))
+            return -1;
+
+        std::string recvMsg;
+        if (socket.readMessage(recvMsg))
+        {
+            // std::cout << "Recv Msg From Server: " << recvMsg << std::endl;
+        }
+
+        return 0;
     }
 
     return -1;
@@ -133,52 +150,21 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    // size_t numberOfClient = atoi(argv[1]);
-    // std::cout << "\n\n************* Sending " << numberOfClient << " Request Concurrently *************\n\n";
-    // // const size_t numberOfClient = 1000;
-    // std::vector<std::future<int>> requestFuture;
-    // for (size_t i = 0; i < numberOfClient; ++i)
-    // {
-    //     requestFuture.push_back(std::async(std::launch::async, sendHttpRequest));
-    // }
-
-    // for (size_t i = 0; i < requestFuture.size(); ++i)
-    // {
-    //     if (requestFuture[i].get() != 0)
-    //     {
-    //         std::cout << "Future #" << i + 1 << ": Failed\n";
-    //     }
-    // }
-
-    ClientSocket socket(PORT);
-    if (!socket.connectServer())
+    size_t numberOfClient = atoi(argv[1]);
+    std::cout << "\n\n************* Sending " << numberOfClient << " Request Concurrently *************\n\n";
+    // const size_t numberOfClient = 1000;
+    std::vector<std::future<int>> requestFuture;
+    for (size_t i = 0; i < numberOfClient; ++i)
     {
-        return -1;
+        requestFuture.push_back(std::async(std::launch::async, sendHttpRequest));
     }
 
-    while (true)
+    for (size_t i = 0; i < requestFuture.size(); ++i)
     {
-        std::cout << "Input Message: " << std::endl;
-        std::string userInput;
-        std::cin >> userInput;
-        if (userInput == "exit")
-            break;
-
-        HttpRequest test(HttpRequestMethod::POST, "/data", "HTTP/1.0");
-
-        test.setUserAgent("Mozilla/4.0 (compatible; MSIE5.01; Windows NT)");
-        test.setHost("localhost::8080");
-        test.setConnection("Keep-Alive");
-        test.setBody("field1=value1&field2=value2", "application/x-www-form-urlencoded");
-        test.createMessage();
-        std::string strBuffer = test.getBuildedMessage();
-
-        std::ofstream logFile("log_file.txt");
-        logFile << strBuffer;
-        logFile.close();
-
-        if (socket.sendMessage("Nguyen dep trai"))
-            std::cout << "Send success";
+        if (requestFuture[i].get() != 0)
+        {
+            std::cout << "Future #" << i + 1 << ": Failed\n";
+        }
     }
 
     return 0;

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
+#include <arpa/inet.h>
 ServerSocket::ServerSocket(int port, int backlog) : m_port(port), m_backlog(backlog)
 {
 }
@@ -59,12 +59,11 @@ bool ServerSocket::startListening()
         return false;
     }
     m_is_started = true;
-    std::cout << "Server Socker Started Listening On Port #" << m_port << std::endl;
 
     return true;
 }
 
-int ServerSocket::acceptConnection()
+int ServerSocket::handleIncomingConnection()
 {
     int new_socket;
     if ((new_socket = accept(m_server_fd, (struct sockaddr *)&m_address,
