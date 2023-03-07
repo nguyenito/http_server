@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <assert.h>
+
 ServerSocket::ServerSocket(int port, int backlog) : m_port(port), m_backlog(backlog)
 {
 }
@@ -32,6 +34,7 @@ bool ServerSocket::startListening()
         return false;
     }
 
+    //SO_REUSEADDR | SO_REUSEPORT
     int opt = 1;
     if (setsockopt(m_server_fd, SOL_SOCKET,
                    SO_REUSEADDR, &opt,
@@ -68,8 +71,8 @@ int ServerSocket::handleIncomingConnection()
     int new_socket = -1;
     try
     {
-        new_socket = accept(m_server_fd, (struct sockaddr *)&m_address,
-                            (socklen_t *)&m_address);
+        int clilen = sizeof(m_cli_addr);
+        new_socket = accept(m_server_fd, (struct sockaddr *) &m_cli_addr, (socklen_t*)&clilen);
         if (new_socket < 0)
         {
             perror("accept");

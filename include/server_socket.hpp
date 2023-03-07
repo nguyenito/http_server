@@ -13,6 +13,7 @@ private:
     int m_backlog{10};
     int m_master_socket{-1};
     struct sockaddr_in m_address;
+    struct sockaddr_in m_cli_addr;
     std::vector<int> m_client_socket;
 
 public:

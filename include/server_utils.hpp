@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <http_header.hpp>
+#include <vector>
 
 namespace http_utils
 {

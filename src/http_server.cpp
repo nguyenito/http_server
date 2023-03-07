@@ -3,6 +3,7 @@
 #include <iostream>
 #include <http_response.hpp>
 #include <server_socket.hpp>
+#include <assert.h>
 
 HttpServer::HttpServer()
 {
